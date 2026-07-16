@@ -60,8 +60,7 @@ export default function CommitChart({ data }: { data: CommitActivity[] }) {
                 year: "numeric",
               })
             }
-            formatter={(value: number) => [`${value} commit${value !== 1 ? "s" : ""}`, ""]}
-          />
+formatter={(value: any) => [`${value} commit${value !== 1 ? "s" : ""}`, ""]}          />
           <Bar
             dataKey="count"
             fill="#4f46e5"
