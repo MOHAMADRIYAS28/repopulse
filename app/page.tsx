@@ -5,9 +5,10 @@ import FileHistory from "./components/FileHistory";
 import ContributorGraph from "./components/ContributorGraph";
 import BottleneckReport from "./components/BottleneckReport";
 import CodeCheck from "./components/CodeCheck";
-import VulnScanner from "./components/VulnScanner";
 import FileBrowser from "./components/FileBrowser";
 import RiskForecast from "./components/RiskForecast";
+import VulnScanner from "./components/VulnScanner";
+import Sidebar, { TabId } from "./components/Sidebar";
 import { useState } from "react";
 import Navbar from "./components/Navbar";
 import RepoSelector from "./components/RepoSelector";
@@ -56,14 +57,14 @@ export default function Home() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [filePathForHistory, setFilePathForHistory] = useState("");
-  const [filePathForCheck, setFilePathForCheck] = useState("");
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   const handleSelectRepo = async (repo: any) => {
     setSelectedRepo(repo);
     setAnalytics(null);
     setLoadFailed(false);
     setLoadingAnalytics(true);
+    setActiveTab("overview");
 
     try {
       const res = await fetch(`/api/analytics/${repo.name}?owner=${repo.owner}`);
@@ -83,18 +84,18 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-base">
       <Navbar />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {!session ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 sm:p-12 min-h-[320px] flex flex-col items-center justify-center text-center gap-3">
+          <div className="bg-surface rounded-xl border border-line p-8 sm:p-12 min-h-[320px] flex flex-col items-center justify-center text-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-1">
               <span className="text-xl">📊</span>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-ink">
               See your repository health at a glance
             </h2>
-            <p className="text-sm text-gray-500 max-w-sm">
+            <p className="text-sm text-ink-muted max-w-sm">
               Sign in with GitHub to pull real-time commit, issue, and pull
               request analytics for any repo you own.
             </p>
@@ -107,121 +108,126 @@ export default function Home() {
             />
 
             {selectedRepo && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">
-                  Repository Files
-                </h4>
-                <FileBrowser
-                  owner={selectedRepo.owner}
-                  repo={selectedRepo.name}
-                  onSelectFile={(path) => {
-                    setFilePathForHistory(path);
-                    setFilePathForCheck(path);
-                  }}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Sidebar
+                  activeTab={activeTab}
+                  onSelectTab={setActiveTab}
+                  repoName={selectedRepo.fullName}
                 />
-              </div>
-            )}
 
-            {selectedRepo && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
-                  <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                    {selectedRepo.fullName}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    {analytics && <HealthBadge healthScore={analytics.healthScore} />}
-                    {analytics && (
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={() => exportToCSV(selectedRepo.name, analytics)}
-                          className="text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-md transition-colors"
-                        >
-                          Export CSV
-                        </button>
-                        <button
-                          onClick={() => exportToPDF(selectedRepo.name, analytics)}
-                          className="text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-md transition-colors"
-                        >
-                          Export PDF
-                        </button>
+                <div className="flex-1 min-w-0 space-y-6">
+                  {activeTab === "overview" && (
+                    <div className="bg-surface rounded-xl border border-line p-5 sm:p-6">
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
+                        <h3 className="font-semibold text-ink text-sm sm:text-base truncate">
+                          {selectedRepo.fullName}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          {analytics && <HealthBadge healthScore={analytics.healthScore} />}
+                          {analytics && (
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => exportToCSV(selectedRepo.name, analytics)}
+                                className="text-xs font-medium text-ink-muted hover:text-ink bg-raised hover:bg-line px-2.5 py-1 rounded-md transition-colors"
+                              >
+                                Export CSV
+                              </button>
+                              <button
+                                onClick={() => exportToPDF(selectedRepo.name, analytics)}
+                                className="text-xs font-medium text-ink-muted hover:text-ink bg-raised hover:bg-line px-2.5 py-1 rounded-md transition-colors"
+                              >
+                                Export PDF
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
+
+                      {loadingAnalytics ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {Array.from({ length: 6 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="h-[76px] bg-base border border-gray-100 rounded-lg animate-pulse"
+                            />
+                          ))}
+                        </div>
+                      ) : loadFailed ? (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+                          Couldn't load analytics for this repo — it may be empty, or
+                          you may not have access to some of its data.
+                        </div>
+                      ) : analytics ? (
+                        <>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <StatCard label="Commits" value={analytics.commitCount} />
+                            <StatCard label="Contributors" value={analytics.contributors.length} />
+                            <StatCard label="Open issues" value={analytics.openIssues} />
+                            <StatCard label="Closed issues" value={analytics.closedIssues} />
+                            <StatCard label="Open PRs" value={analytics.openPRs} />
+                            <StatCard label="Merged PRs" value={analytics.mergedPRs} />
+                          </div>
+
+                          <AnomalyBanner anomaly={analytics.anomaly} />
+
+                          <div className="mt-5">
+                            <h4 className="text-xs font-semibold text-ink-muted mb-2">
+                              Commit activity
+                            </h4>
+                            <CommitChart data={analytics.commitActivity} />
+                          </div>
+
+                          <div className="mt-5 pt-5 border-t border-gray-100">
+                            <h4 className="text-xs font-semibold text-ink-muted mb-3">
+                              Predictive Risk Forecast
+                            </h4>
+                            <RiskForecast prediction={analytics.riskPrediction} />
+                          </div>
+                        </>
+                      ) : null}
+                    </div>
+                  )}
+
+                  {activeTab === "files" && (
+                    <div className="bg-surface rounded-xl border border-line p-5 sm:p-6">
+                      <h4 className="text-sm font-semibold text-ink mb-3">
+                        Repository Files
+                      </h4>
+                      <FileBrowser owner={selectedRepo.owner} repo={selectedRepo.name} />
+                    </div>
+                  )}
+
+                  {activeTab === "history" && (
+                    <FileHistory owner={selectedRepo.owner} repo={selectedRepo.name} />
+                  )}
+
+                  {activeTab === "collaboration" && (
+                    <div className="bg-surface rounded-xl border border-line p-5 sm:p-6">
+                      <h4 className="text-sm font-semibold text-ink mb-3">
+                        Contributor Collaboration Graph
+                      </h4>
+                      <ContributorGraph owner={selectedRepo.owner} repo={selectedRepo.name} />
+                    </div>
+                  )}
+
+                  {activeTab === "bottleneck" && (
+                    <div className="bg-surface rounded-xl border border-line p-5 sm:p-6">
+                      <h4 className="text-sm font-semibold text-ink mb-3">
+                        PR Review Bottleneck Report
+                      </h4>
+                      <BottleneckReport owner={selectedRepo.owner} repo={selectedRepo.name} />
+                    </div>
+                  )}
+
+                  {activeTab === "codecheck" && (
+                    <CodeCheck owner={selectedRepo.owner} repo={selectedRepo.name} />
+                  )}
+
+                  {activeTab === "security" && (
+                    <VulnScanner owner={selectedRepo.owner} repo={selectedRepo.name} />
+                  )}
                 </div>
-
-                {loadingAnalytics ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-[76px] bg-gray-50 border border-gray-100 rounded-lg animate-pulse"
-                      />
-                    ))}
-                  </div>
-                ) : loadFailed ? (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-                    Couldn't load analytics for this repo — it may be empty, or
-                    you may not have access to some of its data.
-                  </div>
-                ) : analytics ? (
-                  <>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <StatCard label="Commits" value={analytics.commitCount} />
-                      <StatCard label="Contributors" value={analytics.contributors.length} />
-                      <StatCard label="Open issues" value={analytics.openIssues} />
-                      <StatCard label="Closed issues" value={analytics.closedIssues} />
-                      <StatCard label="Open PRs" value={analytics.openPRs} />
-                      <StatCard label="Merged PRs" value={analytics.mergedPRs} />
-                    </div>
-
-                    <AnomalyBanner anomaly={analytics.anomaly} />
-
-                    <div className="mt-5">
-                      <h4 className="text-xs font-semibold text-gray-500 mb-2">
-                        Commit activity
-                      </h4>
-                      <CommitChart data={analytics.commitActivity} />
-                    </div>
-
-                    <div className="mt-5 pt-5 border-t border-gray-100">
-                      <h4 className="text-xs font-semibold text-gray-500 mb-3">
-                        Predictive Risk Forecast
-                      </h4>
-                      <RiskForecast prediction={analytics.riskPrediction} />
-                    </div>
-                  </>
-                ) : null}
               </div>
-            )}
-
-            {selectedRepo && (
-              <FileHistory owner={selectedRepo.owner} repo={selectedRepo.name} />
-            )}
-
-            {selectedRepo && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">
-                  Contributor Collaboration Graph
-                </h4>
-                <ContributorGraph owner={selectedRepo.owner} repo={selectedRepo.name} />
-              </div>
-            )}
-
-            {selectedRepo && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">
-                  PR Review Bottleneck Report
-                </h4>
-                <BottleneckReport owner={selectedRepo.owner} repo={selectedRepo.name} />
-              </div>
-            )}
-
-            {selectedRepo && (
-              <CodeCheck owner={selectedRepo.owner} repo={selectedRepo.name} />
-            )}
-
-            {selectedRepo && (
-              <VulnScanner owner={selectedRepo.owner} repo={selectedRepo.name} />
             )}
           </div>
         )}
@@ -232,11 +238,11 @@ export default function Home() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 text-center">
-      <p className="text-xl sm:text-2xl font-bold text-indigo-600 tabular-nums">
+    <div className="bg-base border border-gray-100 rounded-lg p-4 text-center">
+      <p className="text-xl sm:text-2xl font-bold text-signal tabular-nums">
         {value}
       </p>
-      <p className="text-[11px] sm:text-xs text-gray-500 mt-1">{label}</p>
+      <p className="text-[11px] sm:text-xs text-ink-muted mt-1">{label}</p>
     </div>
   );
 }

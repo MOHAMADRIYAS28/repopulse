@@ -1,41 +1,63 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@theme {
+  --color-base: #F7F9FC;
+  --color-surface: #FFFFFF;
+  --color-raised: #F1F4F9;
+  --color-line: #E4E9F0;
+
+  --color-signal: #3654F4;
+  --color-signal-dim: #EEF1FE;
+
+  --color-risk-low: #10B981;
+  --color-risk-mid: #F59E0B;
+  --color-risk-high: #EF4444;
+
+  --color-ink: #0F172A;
+  --color-ink-muted: #64748B;
+  --color-ink-faint: #94A3B8;
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
 
 @layer base {
   body {
-    @apply antialiased;
+    background-color: var(--color-base);
+    color: var(--color-ink);
+    font-family: var(--font-body), sans-serif;
+    -webkit-font-smoothing: antialiased;
     font-feature-settings: "cv11", "ss01";
   }
-}
-
-:root {
-  --color-brand: #4f46e5;
-  --color-brand-dark: #4338ca;
-}
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), sans-serif;
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-signal) 18%, transparent);
+    color: var(--color-ink);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.03);
+  }
+  .stat-value {
+    font-family: var(--font-mono), monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes pulse-sweep {
+  0% { stroke-dashoffset: 240; }
+  100% { stroke-dashoffset: 0; }
+}
+.pulse-line {
+  stroke-dasharray: 240;
+  animation: pulse-sweep 2.4s linear infinite;
 }
