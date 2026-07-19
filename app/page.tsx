@@ -5,6 +5,7 @@ import FileHistory from "./components/FileHistory";
 import ContributorGraph from "./components/ContributorGraph";
 import BottleneckReport from "./components/BottleneckReport";
 import CodeCheck from "./components/CodeCheck";
+import VulnScanner from "./components/VulnScanner";
 import FileBrowser from "./components/FileBrowser";
 import RiskForecast from "./components/RiskForecast";
 import { useState } from "react";
@@ -217,6 +218,10 @@ export default function Home() {
 
             {selectedRepo && (
               <CodeCheck owner={selectedRepo.owner} repo={selectedRepo.name} />
+            )}
+
+            {selectedRepo && (
+              <VulnScanner owner={selectedRepo.owner} repo={selectedRepo.name} />
             )}
           </div>
         )}
