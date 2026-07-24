@@ -7,7 +7,8 @@ type TabId =
   | "collaboration"
   | "bottleneck"
   | "codecheck"
-  | "security";
+  | "security"
+  | "ownership";
 
 const tabs: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
@@ -17,6 +18,7 @@ const tabs: { id: TabId; label: string }[] = [
   { id: "bottleneck", label: "PR Bottleneck" },
   { id: "codecheck", label: "Code Quality" },
   { id: "security", label: "Security Scan" },
+  { id: "ownership", label: "Ownership Map" },
 ];
 
 export default function Sidebar({

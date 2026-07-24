@@ -8,6 +8,7 @@ import CodeCheck from "./components/CodeCheck";
 import FileBrowser from "./components/FileBrowser";
 import RiskForecast from "./components/RiskForecast";
 import VulnScanner from "./components/VulnScanner";
+import OwnershipHeatmap from "./components/OwnershipHeatmap";
 import Sidebar, { TabId } from "./components/Sidebar";
 import { useState } from "react";
 import Navbar from "./components/Navbar";
@@ -226,6 +227,14 @@ export default function Home() {
                   {activeTab === "security" && (
                     <VulnScanner owner={selectedRepo.owner} repo={selectedRepo.name} />
                   )}
+
+                  {activeTab === "ownership" && (
+                    <div className="card p-5 sm:p-6">
+                      <h4 className="text-sm font-semibold text-ink mb-3">Code Ownership Heatmap</h4>
+                      <OwnershipHeatmap owner={selectedRepo.owner} repo={selectedRepo.name} />
+                    </div>
+                  )}
+
                 </div>
               </div>
             )}
